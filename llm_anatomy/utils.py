@@ -123,7 +123,13 @@ def verifica(condizione: bool, messaggio: str) -> None:
     lettore non sa se il controllo e' stato fatto davvero.
     """
     assert condizione, f"VERIFICA FALLITA: {messaggio}"
-    print(f"  [verifica superata] {messaggio}")
+    # A capo entro 78 colonne, il testo allineato sotto se stesso: e' quanto
+    # entra nel riquadro dell'uscita, e una riga piu' lunga verrebbe spezzata
+    # dalla pagina in un punto qualunque.
+    import textwrap
+    prefisso = "  [verifica superata] "
+    print(textwrap.fill(messaggio, width=78, initial_indent=prefisso,
+                        subsequent_indent=" " * len(prefisso)))
 
 
 # Larghezza dello specchio di stampa in pollici: 107,7 mm. Le figure si
@@ -194,7 +200,8 @@ def _mostra_se_notebook(fig) -> None:
 
 
 def shape(t: torch.Tensor) -> str:
-    return "(" + ", ".join(str(d) for d in t.shape) + ")"
+    """La forma come la scrive Python: (4,) per una fila, () per un numero."""
+    return str(tuple(t.shape))
 
 
 def stampa_shape(etichetta: str, t: torch.Tensor) -> None:

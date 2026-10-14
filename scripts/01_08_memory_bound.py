@@ -21,7 +21,7 @@ import torch
 from llm_anatomy.config import AgoGPTConfig
 from llm_anatomy.model import AgoGPT
 from llm_anatomy.sample import genera
-from llm_anatomy.utils import (byte_leggibili, figura, prepara, stile_figure,
+from llm_anatomy.utils import (byte_leggibili, dec, figura, numero, prepara, stile_figure,
                                tabella, titolo)
 
 prepara()
@@ -48,7 +48,7 @@ print(f"  matrice dei pesi: {d}x{d}, {byte_leggibili(byte_pesi)}")
 print()
 
 righe = []
-misure = []            # (intensita, GFLOP/s) per la figura roofline
+misure = []            # (batch, FLOP per byte, GFLOP/s), per la figura
 for B in (1, 4, 16, 64, 256, 1024):
     X = torch.randn(B, d)
     t = cronometra(lambda: X @ W, ripetizioni=20 if B < 256 else 8)
@@ -57,10 +57,10 @@ for B in (1, 4, 16, 64, 256, 1024):
     misure.append((B, flop / byte, flop / t / 1e9))
     righe.append([
         B,
-        f"{1000 * t:.3f}",
-        f"{flop / t / 1e9:.1f}",
-        f"{byte / t / 1e9:.1f}",
-        f"{flop / byte:.1f}",
+        dec(1000 * t, 3),
+        dec(flop / t / 1e9, 1),
+        dec(byte / t / 1e9, 1),
+        dec(flop / byte, 1),
     ])
 tabella(["batch", "ms", "GFLOP/s", "GB/s letti", "FLOP/byte"], righe)
 print("  a batch 1 il rendimento aritmetico e' minimo e la banda e' satura:")
@@ -81,7 +81,7 @@ print(f"  prefill di 64 token: {1000 * t_prefill:7.2f} ms  "
       f"-> {64 / t_prefill:8.0f} token/s")
 print(f"  decode di 1 token:   {1000 * t_decode:7.2f} ms  "
       f"-> {1 / t_decode:8.0f} token/s")
-print(f"  un token in prefill costa {t_decode / (t_prefill / 64):.1f} volte meno")
+print(f"  un token in prefill costa {dec(t_decode / (t_prefill / 64), 1)} volte meno")
 print("  di un token in decode, a parita' di modello e di pesi letti")
 
 titolo("Modelli piu' grandi, generazione piu' lenta")
@@ -115,7 +115,7 @@ for B in (1, 8, 32, 128):
     x = torch.randint(0, cfg_b.vocab_size, (B, 1))
     with torch.no_grad():
         t = cronometra(lambda: mb(x), ripetizioni=10)
-    righe.append([B, f"{1000 * t:.2f}".replace(".", ","), f"{B / t:.0f}"])
+    righe.append([B, dec(1000 * t), numero(B / t)])
 tabella(["batch", "ms/passo", "token/s totali"], righe)
 print("  moltiplicare per 128 le sequenze non moltiplica per 128 il tempo:")
 print("  e' il motivo per cui servire un modello conviene solo in batch")
@@ -171,9 +171,8 @@ ax.annotate("soglia", (soglia, banda * 0.35), rotation=90,
             color="gray", textcoords="offset points", xytext=(-12, 0))
 ax.set_xscale("log")
 ax.set_yscale("log")
-ax.set_xlabel("intensita aritmetica (FLOP per byte letto)")
+ax.set_xlabel("intensità aritmetica (FLOP per byte letto)")
 ax.set_ylabel("prestazioni (GFLOP/s)")
-ax.set_title("Roofline misurato su questa CPU")
 ax.legend(loc="lower right")
 ax.grid(True, which="both", lw=0.3, alpha=0.5)
 figura(fig, "01-08_roofline")

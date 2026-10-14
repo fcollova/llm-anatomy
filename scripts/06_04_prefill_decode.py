@@ -19,7 +19,7 @@ from llm_anatomy.config import AgoGPTConfig
 from llm_anatomy.data import tokenizer_corpus
 from llm_anatomy.model import AgoGPT
 from llm_anatomy.train import carica_checkpoint
-from llm_anatomy.utils import dec, percorso, prepara, tabella, titolo, verifica
+from llm_anatomy.utils import dec, numero, percorso, prepara, tabella, titolo, verifica
 
 prepara()
 torch.set_num_threads(1)
@@ -51,9 +51,9 @@ def mediana(fn, ripetizioni: int = 9) -> float:
 
 
 titolo("Leggere la domanda, scrivere la risposta")
-print("  prefill: il prompt entra tutto insieme, ogni posizione e' indipendente")
-print("           dalle altre nel calcolo delle proiezioni, e la macchina lavora")
-print("           su matrici grandi")
+print("  prefill: il prompt entra tutto insieme, ogni posizione e'")
+print("           indipendente dalle altre nel calcolo delle proiezioni, e la")
+print("           macchina lavora su matrici grandi")
 print("  decode:  un token alla volta, matrici a una riga, e gli stessi pesi")
 print("           riletti dalla memoria a ogni passo")
 
@@ -99,8 +99,8 @@ for da_generare in (20, 100):
     print(f"    totale:                      {dec(totale, 3)} s, di cui "
           f"{dec(100 * ttft / totale, 1)}% di prefill")
 print("  con prompt lunghi e risposte brevi domina il prefill, con prompt")
-print("  brevi e risposte lunghe domina il decode: sono due problemi diversi e")
-print("  si ottimizzano con tecniche diverse")
+print("  brevi e risposte lunghe domina il decode: sono due problemi diversi")
+print("  e si ottimizzano con tecniche diverse")
 
 titolo("Servire piu' utenti aiuta una fase sola")
 righe = []
@@ -111,16 +111,16 @@ for B in (1, 8, 32):
     t_d = mediana(lambda: modello(unob, caches=modello.nuove_cache()))
     righe.append([B,
                   dec(1000 * t_p, 1),
-                  f"{B * 128 / t_p:,.0f}".replace(",", "."),
+                  numero(B * 128 / t_p),
                   dec(1000 * t_d, 2),
-                  f"{B / t_d:,.0f}".replace(",", ".")])
+                  numero(B / t_d)])
 tabella(["batch", "prefill (ms)", "token/s prefill", "decode (ms)",
          "token/s decode"], righe)
 print("  il prefill era gia' saturo con una sola sequenza: il batch lo")
-print("  rallenta quasi proporzionalmente. Il decode invece era in attesa della")
-print("  memoria, e servire piu' sequenze insieme costa quasi lo stesso tempo")
-print("  a passo: e' su questo che si regge il batching continuo dei motori di")
-print("  servizio")
+print("  rallenta quasi proporzionalmente. Il decode invece era in attesa")
+print("  della memoria, e servire piu' sequenze insieme costa quasi lo stesso")
+print("  tempo a passo: e' su questo che si regge il batching continuo dei")
+print("  motori di servizio")
 
 titolo("Byte letti per ogni carattere scritto")
 byte = parametri * 4

@@ -16,7 +16,7 @@ import torch.nn.functional as F
 
 from llm_anatomy.config import AgoGPTConfig
 from llm_anatomy.model import FFN, SwiGLU
-from llm_anatomy.utils import (conta_parametri, prepara, stampa_shape,
+from llm_anatomy.utils import (conta_parametri, dec, numero, prepara, stampa_shape,
                                tabella, titolo, verifica)
 
 prepara()
@@ -26,11 +26,9 @@ x = torch.tensor([-3.0, -1.0, -0.5, 0.0, 0.5, 1.0, 3.0])
 righe = []
 for v in x.tolist():
     t = torch.tensor(v)
-    righe.append([f"{v:5.1f}".replace(".", ","),
-                  f"{F.relu(t):7.4f}".replace(".", ","),
-                  f"{F.gelu(t):7.4f}".replace(".", ","),
-                  f"{F.silu(t):7.4f}".replace(".", ",")])
-tabella(["x", "ReLU", "GELU", "SiLU"], righe)
+    righe.append([dec(v, 1), dec(F.relu(t), 4), dec(F.gelu(t), 4),
+                  dec(F.silu(t), 4)])
+tabella(["x", "ReLU", "GELU", "SiLU"], righe, allinea="rrrr")
 print("  ReLU azzera di netto, GELU e SiLU lasciano passare un poco di")
 print("  negativo: la derivata non e' mai esattamente zero, e un neurone")
 print("  spento puo' tornare a vivere")
@@ -59,8 +57,7 @@ titolo("SwiGLU: tre matrici, e una porta")
 cfg_sw = AgoGPTConfig(d_model=d, n_head=8, act="swiglu", vocab_size=93)
 sw = SwiGLU(cfg_sw)
 print(f"  d_ff scelta dalla configurazione: {cfg_sw.d_ff}")
-print(f"  8/3 x {d} = {8 * d / 3:.1f}, arrotondato al multiplo di 32"
-      .replace(".", ","))
+print(f"  8/3 x {d} = {dec(8 * d / 3, 1)}, arrotondato al multiplo di 32")
 stampa_shape("porta", sw.w_gate(x))
 stampa_shape("salita", sw.w_up(x))
 stampa_shape("uscita", sw(x))
@@ -72,14 +69,14 @@ for nome, n_matrici, fattore in (("FFN classica", 2, 4.0),
                                  ("SwiGLU a 8/3 d", 3, 8 / 3)):
     d_ff = int(fattore * d)
     par = n_matrici * d * d_ff
-    righe.append([nome, n_matrici, d_ff, f"{par:,}".replace(",", "."),
-                  f"{par / (2 * d * 4 * d):.2f}".replace(".", ",")])
+    classica = 2 * d * 4 * d
+    righe.append([nome, n_matrici, d_ff, numero(par), dec(par / classica)])
 tabella(["variante", "matrici", "d_ff", "parametri", "rispetto alla classica"],
         righe)
 verifica(abs(3 * (8 / 3) - 2 * 4) < 1e-9,
          "tre matrici di larghezza 8/3 d contano quanto due di larghezza 4d")
-print("  la sostituzione e' quindi gratuita in parametri e in calcolo: si paga")
-print("  solo una moltiplicazione elemento per elemento in piu'")
+print("  la sostituzione e' quindi gratuita in parametri e in calcolo: si")
+print("  paga solo una moltiplicazione elemento per elemento in piu'")
 
 titolo("Sul nostro modello")
 righe = []

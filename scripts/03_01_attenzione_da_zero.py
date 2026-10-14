@@ -11,10 +11,13 @@ Da provare: cambia la frase in cima: le percentuali cambiano, la struttura no.
 
 import math
 
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 
-from llm_anatomy.utils import prepara, titolo, verifica
+from llm_anatomy.utils import figura, prepara, stile_figure, titolo, verifica
 
 prepara()
 
@@ -99,3 +102,27 @@ verifica(torch.allclose(attenzione(x, Wq, Wk, Wv), y, atol=1e-6),
          "la versione compatta fa esattamente quello che abbiamo fatto a mano")
 print("  e' l'intera attenzione: tre proiezioni, un prodotto, una maschera,")
 print("  una softmax, un altro prodotto")
+
+# La tabella delle percentuali come mappa di colori: piu' scuro, piu' attenzione.
+# Le caselle che la maschera chiude restano bianche.
+titolo("La stessa tabella, a colori")
+from matplotlib.colors import LinearSegmentedColormap
+mappa = LinearSegmentedColormap.from_list("tasca", ["#FFFFFF", "#1F5F63"])
+p = pesi[0].detach().clone()
+p[~torch.ones(T, T, dtype=torch.bool).tril()] = float("nan")
+fig, ax = plt.subplots(figsize=(stile_figure() * 0.62, 2.5))
+ax.imshow(p, cmap=mappa, vmin=0, vmax=1)
+for i in range(T):
+    for j in range(i + 1):
+        v = float(p[i, j])
+        ax.text(j, i, f"{100 * v:.0f}%", ha="center", va="center",
+                color="white" if v > 0.55 else "black")
+ax.set_xticks(range(T), frase)
+ax.set_yticks(range(T), frase)
+ax.set_xlabel("chi viene guardato")
+ax.set_ylabel("chi guarda")
+ax.tick_params(length=0)
+for lato in ax.spines.values():
+    lato.set_visible(False)
+figura(fig, "03-01_mappa_attenzione")
+

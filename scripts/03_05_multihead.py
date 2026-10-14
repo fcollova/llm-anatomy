@@ -16,7 +16,7 @@ import torch
 
 from llm_anatomy.config import AgoGPTConfig
 from llm_anatomy.model import CausalSelfAttention
-from llm_anatomy.utils import (conta_parametri, prepara, tabella, titolo,
+from llm_anatomy.utils import (conta_parametri, numero, prepara, tabella, titolo,
                                verifica)
 
 prepara()
@@ -53,7 +53,7 @@ righe = []
 for teste in (1, 2, 4, 6, 12):
     c = AgoGPTConfig(d_model=C, n_head=teste, block_size=T, vocab_size=93)
     n = conta_parametri(CausalSelfAttention(c))
-    righe.append([teste, C // teste, f"{n:,}".replace(",", ".")])
+    righe.append([teste, C // teste, numero(n)])
 tabella(["teste", "numeri per testa", "parametri"], righe)
 print("  la colonna dei parametri non si muove")
 print("  piu' teste = fette piu' sottili, non piu' modello")

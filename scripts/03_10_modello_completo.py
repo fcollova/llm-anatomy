@@ -74,7 +74,7 @@ print("  su un vocabolario da 50.000 simboli il risparmio diventa decisivo")
 
 titolo("Non sa nulla del futuro")
 idx2 = idx.clone()
-idx2[:, -1] = (idx2[:, -1] + 1) % cfg.vocab_size
+idx2[:, -1] = (idx2[:, -1] + 1) % cfg.vocab_size   # cambia l'ultimo
 with torch.no_grad():
     l1, _ = modello(idx)
     l2, _ = modello(idx2)
@@ -96,5 +96,6 @@ righe = [[k, v, f"{100 * v / totale:.1f}%".replace(".", ",")]
          for k, v in gruppi.items()]
 righe.append(["totale", totale, "100,0%"])
 tabella(["gruppo", "parametri", "quota"], righe)
-print("  la FFN pesa piu' dell'attenzione, con questo rapporto d_ff/d: e' vero")
-print("  anche nei modelli grandi, dove le due parti stanno circa due a uno")
+print("  la FFN pesa piu' dell'attenzione, con questo rapporto d_ff/d: e'")
+print("  vero anche nei modelli grandi, dove le due parti stanno circa due a")
+print("  uno")

@@ -14,7 +14,7 @@ import math
 
 import torch
 
-from llm_anatomy.utils import prepara, tabella, titolo, verifica
+from llm_anatomy.utils import dec, prepara, tabella, titolo, verifica
 
 prepara()
 
@@ -33,12 +33,8 @@ for d_k in (4, 16, 64, 256, 1024):
     k = torch.randn(CAMPIONI, T, d_k)
     grezzi = q @ k.transpose(-2, -1)
     scalati = grezzi / math.sqrt(d_k)
-    righe.append([
-        d_k,
-        f"{grezzi.std():.2f}".replace(".", ","),
-        f"{math.sqrt(d_k):.2f}".replace(".", ","),
-        f"{scalati.std():.3f}".replace(".", ","),
-    ])
+    righe.append([d_k, dec(grezzi.std()), dec(math.sqrt(d_k)),
+                  dec(scalati.std(), 3)])
 tabella(["d_k", "dev. std grezza", "sqrt(d_k)", "dev. std scalata"], righe)
 print("  la deviazione grezza segue sqrt(d_k); dopo la divisione resta uno")
 print("  a ogni dimensione, che e' esattamente lo scopo del fattore")
@@ -56,40 +52,37 @@ for d_k in (4, 16, 64, 256, 1024):
     h_senza = entropia_media(grezzi)
     h_con = entropia_media(grezzi / math.sqrt(d_k))
     massimo = float(grezzi.softmax(-1).max(dim=-1).values.mean())
-    righe.append([
-        d_k,
-        f"{h_senza:.3f}".replace(".", ","),
-        f"{h_con:.3f}".replace(".", ","),
-        f"{massimo:.3f}".replace(".", ","),
-    ])
+    righe.append([d_k, dec(h_senza, 3), dec(h_con, 3), dec(massimo, 3)])
 tabella(["d_k", "entropia senza", "entropia con", "peso massimo senza"], righe)
-print("  senza scaling, a d_k = 1024 l'attenzione mette quasi tutta la massa su")
-print("  una sola posizione: e' un puntatore, non piu' una media pesata")
+print("  senza scaling, a d_k = 1024 l'attenzione mette quasi tutta la massa")
+print("  su una sola posizione: e' un puntatore, non piu' una media pesata")
 
 titolo("E il modello smette di imparare")
 # Confrontare la norma del gradiente rispetto a q non direbbe nulla: il fattore
 # di scala moltiplica quel gradiente per costruzione. Cio' che conta e' quanto
 # il softmax stesso e' ancora derivabile, cioe' la traccia del suo jacobiano,
 # somma di p(1-p): vale zero esatto quando la distribuzione e' un puntatore.
+
+
+def sensibilita(p: torch.Tensor) -> float:
+    """Quanto si muovono le percentuali se i punteggi si muovono di poco."""
+    return float((p * (1 - p)).sum(dim=-1).mean())
+
+
 righe = []
 for d_k in (16, 64, 256, 1024):
     q = torch.randn(CAMPIONI, T, d_k)
     k = torch.randn(CAMPIONI, T, d_k)
     grezzi = q @ k.transpose(-2, -1)
-    for nome, s in (("senza", grezzi), ("con", grezzi / math.sqrt(d_k))):
-        p = s.softmax(dim=-1)
-        sensibilita = float((p * (1 - p)).sum(dim=-1).mean())
-        if nome == "senza":
-            senza = sensibilita
-        else:
-            righe.append([d_k,
-                          f"{senza:.4f}".replace(".", ","),
-                          f"{sensibilita:.4f}".replace(".", ","),
-                          f"{sensibilita / max(senza, 1e-12):.0f}x"])
+    senza = sensibilita(grezzi.softmax(dim=-1))
+    con = sensibilita((grezzi / math.sqrt(d_k)).softmax(dim=-1))
+    rapporto = con / max(senza, 1e-12)
+    righe.append([d_k, dec(senza, 4), dec(con, 4), f"{rapporto:.0f}x"])
 tabella(["d_k", "sensibilita' senza", "sensibilita' con", "rapporto"], righe)
-print("  a d_k = 1024 il softmax non scalato e' praticamente costante rispetto")
-print("  ai suoi ingressi: qualunque correzione arrivi dalla perdita, i")
-print("  punteggi non si spostano piu' e la testa resta congelata dov'e'")
+print("  a d_k = 1024 il softmax non scalato e' praticamente costante")
+print("  rispetto ai suoi ingressi: qualunque correzione arrivi dalla")
+print("  perdita, i punteggi non si spostano piu' e la testa resta congelata")
+print("  dov'e'")
 
 titolo("Verifiche")
 d_k = 1024

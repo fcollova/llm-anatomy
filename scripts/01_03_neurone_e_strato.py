@@ -39,7 +39,8 @@ titolo("Uno strato: molti neuroni sullo stesso ingresso")
 strato = nn.Linear(d_in, d_out, bias=True)
 stampa_shape("weight", strato.weight)
 stampa_shape("bias", strato.bias)
-print(f"  parametri: {conta_parametri(strato)} = {d_out}*{d_in} pesi + {d_out} bias")
+print(f"  parametri: {conta_parametri(strato)} = "
+      f"{d_out}*{d_in} pesi + {d_out} bias")
 
 X = torch.randn(B, d_in)
 Y = strato(X)

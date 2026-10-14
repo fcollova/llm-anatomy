@@ -15,7 +15,7 @@ import torch
 
 from llm_anatomy.config import AgoGPTConfig
 from llm_anatomy.model import Blk
-from llm_anatomy.utils import (conta_parametri, prepara, stampa_shape,
+from llm_anatomy.utils import (conta_parametri, dec, prepara, stampa_shape,
                                tabella, titolo, verifica)
 
 prepara()
@@ -53,13 +53,18 @@ with torch.no_grad():
     f = blocco.ffn(blocco.norm2(dopo_attn))
     finale = dopo_attn + f
 
+def lunghezza(t: torch.Tensor) -> float:
+    """La lunghezza media dei vettori, uno per parola."""
+    return float(t.norm(dim=-1).mean())
+
+
+ingresso = lunghezza(x)
 righe = [
-    ["ingresso", f"{float(x.norm(dim=-1).mean()):.3f}".replace(".", ","), "---"],
-    ["contributo attenzione", f"{float(a.norm(dim=-1).mean()):.3f}".replace(".", ","),
-     f"{float(a.norm(dim=-1).mean() / x.norm(dim=-1).mean()):.3f}".replace(".", ",")],
-    ["contributo FFN", f"{float(f.norm(dim=-1).mean()):.3f}".replace(".", ","),
-     f"{float(f.norm(dim=-1).mean() / x.norm(dim=-1).mean()):.3f}".replace(".", ",")],
-    ["uscita", f"{float(finale.norm(dim=-1).mean()):.3f}".replace(".", ","), "---"],
+    ["ingresso", dec(ingresso, 3), "---"],
+    ["contributo attenzione", dec(lunghezza(a), 3),
+     dec(lunghezza(a) / ingresso, 3)],
+    ["contributo FFN", dec(lunghezza(f), 3), dec(lunghezza(f) / ingresso, 3)],
+    ["uscita", dec(lunghezza(finale), 3), "---"],
 ]
 tabella(["quantita'", "norma media", "rispetto all'ingresso"], righe)
 print("  a inizializzazione i contributi sono piccoli rispetto al flusso:")
@@ -105,5 +110,5 @@ verifica(abs(float(n1.norm(dim=-1).mean()) - float(n2.norm(dim=-1).mean())) < 0.
          "l'uscita post-norm ha la stessa norma qualunque sia la scala in entrata")
 print("  il post-norm consegna al blocco successivo un flusso sempre della")
 print("  stessa taglia: comodo per la stabilita' numerica, e fatale per il")
-print("  gradiente, perche' il percorso diretto dall'ingresso all'uscita viene")
-print("  interrotto a ogni blocco. Lo misura lo script 03-08")
+print("  gradiente, perche' il percorso diretto dall'ingresso all'uscita")
+print("  viene interrotto a ogni blocco. Lo misura lo script 03-08")

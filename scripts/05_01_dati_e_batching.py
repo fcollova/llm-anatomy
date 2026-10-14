@@ -15,7 +15,7 @@ import torch
 
 from llm_anatomy.data import (NOME_CORPUS, carica_testo, get_batch,
                               prepara_split)
-from llm_anatomy.utils import (byte_leggibili, numero, prepara, stampa_shape,
+from llm_anatomy.utils import (byte_leggibili, dec, numero, prepara, stampa_shape,
                                tabella, titolo, verifica)
 
 prepara()
@@ -88,12 +88,11 @@ print(f"  un batch {B}x{T} contiene quindi {B * T} coppie contesto-bersaglio")
 titolo("Quante volte rilegge il libro")
 righe = []
 for passi in (500, 1000, 2500):
-    token = passi * 16 * 128
-    righe.append([numero(passi), numero(token),
-                  f"{token / len(dati_train):.2f}".replace(".", ",")])
+    token = passi * 16 * 128          # sedici finestre da 128 a ogni passo
+    righe.append([numero(passi), numero(token), dec(token / len(dati_train))])
 tabella(["passi", "token visti", "epoche sul corpus"], righe)
 volte = 2500 * 16 * 128 / len(dati_train)
-print(f"  con B=16 e T=128, i 2500 passi dell'addestramento rileggono il testo "
-      f"{volte:.1f}".replace(".", ","))
+print(f"  con B=16 e T=128, i 2500 passi dell'addestramento rileggono "
+      f"il testo {dec(volte, 1)}")
 print("  volte: abbastanza per imparare l'ortografia e le formule che tornano")
 print("  in ogni ricetta, troppo poco per sapere le ricette a memoria")

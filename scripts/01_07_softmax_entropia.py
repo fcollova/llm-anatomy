@@ -36,7 +36,8 @@ titolo("Aggiungere lo stesso a tutti non cambia niente")
 spostati = logits + 100.0
 verifica(torch.allclose(spostati.softmax(-1), p, atol=1e-6),
          "sommare una costante a tutti i logit non cambia la distribuzione")
-print("  per questo l'implementazione sottrae il massimo prima di esponenziare:")
+print("  per questo l'implementazione sottrae il massimo prima di")
+print("  esponenziare:")
 print(f"  exp(100 + 2) = {math.exp(102):.3e} traboccherebbe in float32 gia' a ~88")
 
 
@@ -81,19 +82,21 @@ for nome, l in casi.items():
           f"perplexity {math.exp(ce):8.2f}")
 print("  un modello a caso su 93 simboli parte da una perdita di "
       f"{math.log(93):.3f}")
-print("  ed e' esattamente il valore da cui parte il mini-modello nel Cap. 5")
+print("  ed e' esattamente il valore da cui parte il modello del capitolo 6")
+
+titolo("Le stesse cose, disegnate")
 
 fig, ax = plt.subplots(2, 1, figsize=(stile_figure(), 4.6))
 x = torch.arange(5)
 for t in (0.25, 1.0, 5.0):
     ax[0].plot(x, (logits / t).softmax(-1), marker="o", label=f"T = {t}")
 ax[0].set_xticks(x, etichette)
-ax[0].set_ylabel("probabilita'")
+ax[0].set_ylabel("probabilità")
 ax[0].legend()
 tt = torch.linspace(0.1, 5, 100)
 ax[1].plot(tt, [entropia((logits / float(t)).softmax(-1)) for t in tt])
 ax[1].axhline(math.log(5), ls="--", lw=0.8)
 ax[1].set_xlabel("temperatura")
 ax[1].set_ylabel("entropia (nat)")
-ax[1].set_title("il tetto e' log(5), la distribuzione uniforme")
+fig.tight_layout()
 figura(fig, "01-07_temperatura_entropia")

@@ -34,18 +34,20 @@ print(f"  media dell'ingresso:  {x.mean():+.4f}")
 print(f"  media dopo LayerNorm: {y_ln.mean():+.4f}")
 print(f"  media dopo RMSNorm:   {y_rms.mean():+.4f}")
 print(f"  scarto massimo fra le due uscite: {(y_ln - y_rms).abs().max():.4f}")
-print(f"  parametri: LayerNorm {conta_parametri(ln)}, RMSNorm {conta_parametri(rms)}")
+print(f"  parametri: LayerNorm {conta_parametri(ln)}, "
+      f"RMSNorm {conta_parametri(rms)}")
 
 titolo("Quando coincidono")
 x0 = x - x.mean(dim=-1, keepdim=True)
 verifica(torch.allclose(ln(x0), rms(x0), atol=1e-5),
          "senza media da sottrarre, LayerNorm e RMSNorm fanno la stessa cosa")
-print("  e' l'osservazione da cui nasce RMSNorm: la sottrazione della media non")
-print("  serviva, e costa una passata in piu' sui dati")
+print("  e' l'osservazione da cui nasce RMSNorm: la sottrazione della media")
+print("  non serviva, e costa una passata in piu' sui dati")
 
 titolo("Ventiquattro blocchi, e il gradiente")
 N_BLOCCHI = 24
-cfg = AgoGPTConfig(d_model=128, n_head=4, block_size=64, vocab_size=93, act="gelu")
+cfg = AgoGPTConfig(d_model=128, n_head=4, block_size=64, vocab_size=93,
+                   act="gelu")
 risultati = {}
 for etichetta, pre in (("pre-norm", True), ("post-norm", False)):
     torch.manual_seed(1337)
@@ -61,21 +63,22 @@ for etichetta, pre in (("pre-norm", True), ("post-norm", False)):
 righe = []
 for i in (0, 5, 11, 17, 23):
     pre, post = risultati["pre-norm"][i], risultati["post-norm"][i]
-    righe.append([i, f"{pre:.3e}", f"{post:.3e}", f"{pre / max(post, 1e-30):.0f}x"])
+    rapporto = pre / max(post, 1e-30)
+    righe.append([i, f"{pre:.3e}", f"{post:.3e}", f"{rapporto:.0f}x"])
 tabella(["blocco", "pre-norm", "post-norm", "rapporto"], righe)
 
 rapporto_medio = (sum(risultati["pre-norm"]) / sum(risultati["post-norm"]))
 print(f"  il gradiente post-norm e' in media {rapporto_medio:.0f} volte piu'")
 print("  piccolo di quello pre-norm, a ogni profondita'")
 verifica(rapporto_medio > 100,
-         "attraverso 24 blocchi post-norm il gradiente si attenua di oltre due "
-         "ordini di grandezza")
-print("  la differenza non e' nella distribuzione lungo la pila -- in entrambi")
-print("  gli schemi i primi blocchi ricevono piu' segnale degli ultimi -- ma")
-print("  nella scala assoluta: nel post-norm ogni blocco normalizza il flusso")
-print("  residuo, e il percorso diretto dall'ingresso all'uscita non esiste")
-print("  piu'. E' la ragione del warmup nel paper del 2017 e dell'instabilita'")
-print("  che si osservava sopra i dodici blocchi")
+         "attraverso 24 blocchi post-norm il gradiente si attenua di "
+         "oltre due ordini di grandezza")
+print("  la differenza non e' nella distribuzione lungo la pila -- in")
+print("  entrambi gli schemi i primi blocchi ricevono piu' segnale degli")
+print("  ultimi -- ma nella scala assoluta: nel post-norm ogni blocco")
+print("  normalizza il flusso residuo, e il percorso diretto dall'ingresso")
+print("  all'uscita non esiste piu'. E' la ragione del warmup nel paper del")
+print("  2017 e dell'instabilita' che si osservava sopra i dodici blocchi")
 
 titolo("Come cresce il flusso")
 attivazioni = {}

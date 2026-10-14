@@ -58,15 +58,18 @@ for passo in (0, 10, WARMUP - 1, WARMUP, 200, 400, PASSI - 1):
                   f"{coseno(passo):.2e}",
                   f"{radice_inversa(passo):.2e}",
                   f"{costante(passo):.2e}"])
-tabella(["passo", "coseno + warmup", "radice inversa (2017)", "costante"], righe)
-print("  la radice inversa e' scritta con la normalizzazione del paper, quindi")
-print("  su una scala diversa: cio' che conta e' la forma, non il valore")
+tabella(["passo", "coseno + warmup", "radice inversa (2017)", "costante"],
+        righe)
+print("  la radice inversa e' scritta con la normalizzazione del paper,")
+print("  quindi su una scala diversa: cio' che conta e' la forma, non il")
+print("  valore")
 
 titolo("Perche' non si parte a tutta velocita'")
-print("  ad Adam servono alcuni passi per stimare i momenti del gradiente. Nei")
-print("  primissimi passi la stima e' rumorosa, e un tasso pieno la trasforma")
-print("  in aggiornamenti enormi. Il warmup non e' scaramanzia: e' il tempo")
-print("  che si concede all'ottimizzatore per misurare la scala dei gradienti")
+print("  ad Adam servono alcuni passi per stimare i momenti del gradiente.")
+print("  Nei primissimi passi la stima e' rumorosa, e un tasso pieno la")
+print("  trasforma in aggiornamenti enormi. Il warmup non e' scaramanzia: e'")
+print("  il tempo che si concede all'ottimizzatore per misurare la scala dei")
+print("  gradienti")
 verifica(coseno(0) < coseno(WARMUP) / 10,
          "il tasso al primo passo e' meno di un decimo di quello a regime")
 verifica(abs(coseno(PASSI - 1) - 0.1 * LR) < 0.02 * LR,
@@ -74,7 +77,8 @@ verifica(abs(coseno(PASSI - 1) - 0.1 * LR) < 0.02 * LR,
 
 titolo("La differenza, misurata")
 _, dati_train, dati_val = prepara_split()
-cfg = AgoGPTConfig(vocab_size=93, block_size=64, n_layer=2, d_model=96, n_head=4)
+cfg = AgoGPTConfig(vocab_size=93, block_size=64, n_layer=2, d_model=96,
+                   n_head=4)
 tc = ConfigAddestramento(passi=PASSI, batch_size=16, lr=LR, warmup=WARMUP)
 
 risultati = {}
@@ -89,7 +93,7 @@ for nome, schedule in (("coseno + warmup", coseno),
     storia = []
     for passo in range(PASSI):
         for gruppo in ott.param_groups:
-            gruppo["lr"] = schedule(passo)
+            gruppo["lr"] = schedule(passo)      # il tasso di questo passo
         x, y = get_batch(dati_train, tc.batch_size, cfg.block_size, gen)
         _, perdita = modello(x, y)
         ott.zero_grad(set_to_none=True)
@@ -109,7 +113,8 @@ for nome, schedule in (("coseno + warmup", coseno),
 
 righe = [[nome, dec(storia[0], 3), dec(storia[-1], 3), dec(val, 4)]
          for nome, (storia, val) in risultati.items()]
-tabella(["schedule", "perdita a 20 passi", "a fine corsa", "validazione"], righe)
+tabella(["schedule", "perdita a 20 passi", "a fine corsa", "validazione"],
+        righe)
 
 migliore = min(risultati, key=lambda k: risultati[k][1])
 print(f"  il migliore e' '{migliore}'")
@@ -118,10 +123,13 @@ verifica(risultati["coseno + warmup"][1] <= risultati["costante"][1],
 divario = risultati["costante"][1] - risultati["coseno + warmup"][1]
 print(f"  il divario sulla validazione e' {dec(divario, 4)} nat: piccolo in")
 print("  valore assoluto, e nella stessa direzione a ogni scala. La coda a")
-print("  tasso basso serve a rifinire, la fase a tasso alto a non fermarsi nel")
-print("  primo minimo incontrato, e il warmup a non rovinare i primi passi:")
-print(f"  il tasso triplo senza warmup chiude a {dec(risultati['costante senza warmup, 3x'][1], 4)}")
+print("  tasso basso serve a rifinire, la fase a tasso alto a non fermarsi")
+print("  nel primo minimo incontrato, e il warmup a non rovinare i primi")
+print("  passi:")
+triplo = risultati["costante senza warmup, 3x"][1]
+print(f"  il tasso triplo senza warmup chiude a {dec(triplo, 4)}")
 
+titolo("Le stesse cose, disegnate")
 fig, ax = plt.subplots(2, 1, figsize=(stile_figure(), 4.6))
 passi = range(PASSI)
 ax[0].plot(passi, [coseno(p) for p in passi], lw=1.4, label="coseno + warmup")

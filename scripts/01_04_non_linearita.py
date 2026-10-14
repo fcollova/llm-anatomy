@@ -52,7 +52,7 @@ print(f"  scarto contro la matrice equivalente: {scarto_nl:.3f}")
 # La miglior approssimazione lineare possibile: soluzione ai minimi quadrati
 # sull'insieme dei punti. Se la rete con ReLU fosse lineare, il residuo
 # sarebbe nullo a meno dell'errore numerico.
-X1 = torch.cat([X, torch.ones(B, 1)], dim=1)
+X1 = torch.cat([X, torch.ones(B, 1)], dim=1)   # piu' il termine fisso
 soluzione = torch.linalg.lstsq(X1, y_nl).solution
 residuo = (X1 @ soluzione - y_nl).pow(2).mean().sqrt().item()
 varianza = y_nl.std().item()

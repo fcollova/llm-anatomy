@@ -12,7 +12,7 @@ Da provare: aggiungi una configurazione con vocabolario da 128.000 simboli.
 
 from llm_anatomy.config import AgoGPTConfig
 from llm_anatomy.model import AgoGPT
-from llm_anatomy.utils import numero, prepara, tabella, titolo, verifica
+from llm_anatomy.utils import dec, numero, prepara, tabella, titolo, verifica
 
 prepara()
 
@@ -32,11 +32,12 @@ for n_layer, d_model, n_head in ((2, 128, 4), (4, 192, 6), (6, 384, 6),
     m = AgoGPT(cfg)
     misurati = m.numero_parametri(senza_embedding=True)
     formula = 12 * n_layer * d_model ** 2
+    scarto = 100 * (misurati - formula) / formula
     righe.append([
         f"L{n_layer} d{d_model}",
         numero(misurati),
         numero(formula),
-        f"{100 * (misurati - formula) / formula:+.2f}%".replace(".", ","),
+        ("+" if scarto >= 0 else "") + dec(scarto) + "%",
     ])
 tabella(["modello", "misurati (senza emb.)", "12 N d^2", "scarto"], righe)
 print("  lo scarto e' quello delle sole norme: due vettori di d elementi per")
@@ -64,8 +65,8 @@ for nome, kwargs in (
                         bias=False, **kwargs)
     m = AgoGPT(cfg)
     misurati = m.numero_parametri(senza_embedding=True)
-    righe.append([nome, cfg.d_ff, numero(misurati),
-                  f"{misurati / formula:.3f}".replace(".", ",")])
+    rapporto = misurati / formula
+    righe.append([nome, cfg.d_ff, numero(misurati), dec(rapporto, 3)])
 tabella(["variante", "d_ff", "parametri", "rispetto a 12 N d^2"], righe)
 print("  SwiGLU resta vicinissimo, perche' 8/3 e' scelto apposta per questo;")
 print("  GQA toglie parametri dall'attenzione e porta il rapporto sotto uno")
@@ -83,6 +84,6 @@ for vocab in (93, 8000, 32000, 128000):
                       f"{100 * emb / tot:.1f}%".replace(".", ",")])
 tabella(["vocabolario", "modello", "parametri totali", "quota dell'embedding"],
         righe)
-print("  con un vocabolario reale e un modello piccolo l'embedding e' meta' del")
-print("  totale: e' il motivo per cui il conteggio 'senza embedding' e' quello")
-print("  che compare nelle leggi di scala")
+print("  con un vocabolario reale e un modello piccolo l'embedding e' meta'")
+print("  del totale: e' il motivo per cui il conteggio 'senza embedding' e'")
+print("  quello che compare nelle leggi di scala")

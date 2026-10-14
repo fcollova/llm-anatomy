@@ -68,8 +68,9 @@ def campiona(logits: torch.Tensor, temp: float = 1.0, k: int = 0,
 
 
 @torch.no_grad()
-def genera(modello, idx: torch.Tensor, n_token: int, temp: float = 1.0, k: int = 0,
-           p: float = 1.0, minp: float = 0.0, usa_cache: bool = True,
+def genera(modello, idx: torch.Tensor, n_token: int, temp: float = 1.0,
+           k: int = 0, p: float = 1.0, minp: float = 0.0,
+           usa_cache: bool = True,
            generatore: torch.Generator | None = None) -> torch.Tensor:
     """Genera n_token continuando idx (B, T).
 
@@ -95,7 +96,8 @@ def genera(modello, idx: torch.Tensor, n_token: int, temp: float = 1.0, k: int =
                 ingresso = idx[:, -T_max:]
                 offset = 0
             else:
-                ingresso = ingresso[:, -T_max:] if offset == 0 else ingresso[:, -1:]
+                ingresso = (ingresso[:, -T_max:] if offset == 0
+                            else ingresso[:, -1:])
             logits, _ = modello(ingresso, caches=caches, pos_offset=offset)
             offset += ingresso.shape[1]
         else:

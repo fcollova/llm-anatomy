@@ -31,7 +31,8 @@ print(f"  {'la seconda':<24} {'':<12} {'a.b':>7} {'gradi':>7}")
 for nome, b in casi.items():
     coseno = F.cosine_similarity(a, b, dim=0).clamp(-1, 1)
     gradi = torch.rad2deg(torch.acos(coseno))
-    print(f"  {nome:<24} {str(b.tolist()):<12} {torch.dot(a, b):7.2f} {gradi:7.0f}")
+    print(f"  {nome:<24} {str(b.tolist()):<12} "
+          f"{torch.dot(a, b):7.2f} {gradi:7.0f}")
 verifica(torch.dot(a, casi["ad angolo retto"]).item() == 0.0,
          "due direzioni ad angolo retto danno esattamente zero")
 print("  positivo se sono d'accordo, zero se non c'entrano nulla,")
@@ -46,23 +47,6 @@ for nome, b in (("lunga", lungo), ("corta", corto)):
           f"a.b {torch.dot(a, b):7.2f}   angolo uguale (coseno {coseno:.3f})")
 print("  stessa direzione, prodotti scalari lontanissimi: il numero cresce")
 print("  se le frecce si allungano, anche quando l'accordo non cambia")
-
-titolo("Tutte le coppie in un colpo solo")
-T, d = 4, 8
-q = torch.randn(T, d)
-k = torch.randn(T, d)
-punteggi = q @ k.T
-print(f"  {T} domande e {T} risposte, ognuna lunga {d} numeri")
-print(f"  q @ k.T da' una tabella {tuple(punteggi.shape)}: una casella per coppia\n")
-for i in range(T):
-    print("   " + " ".join(f"{v:7.3f}" for v in punteggi[i].tolist()))
-a_mano = torch.zeros(T, T)
-for i in range(T):
-    for j in range(T):
-        a_mano[i, j] = torch.dot(q[i], k[j])
-verifica(torch.allclose(a_mano, punteggi, atol=1e-6),
-         f"le {T * T} caselle coincidono con {T * T} prodotti scalari fatti a mano")
-print("  una moltiplicazione fra matrici e' questo: tutti i confronti insieme")
 
 titolo("Piu' numeri, punteggi piu' grandi")
 print(f"  {'lunghezza':>10} {'media':>9} {'quanto oscilla':>16} {'radice':>9}")

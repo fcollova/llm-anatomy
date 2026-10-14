@@ -76,12 +76,14 @@ righe = []
 for l, tt in zip(lunghezze, tempi):
     if l in (8, 32, 64, 96, 128):
         righe.append([l, dec(1000 * tt, 3), dec(1000 * tt / l, 4)])
-tabella(["lunghezza del prefisso", "ms per passaggio", "ms per posizione"], righe)
+tabella(["lunghezza del prefisso", "ms per passaggio", "ms per posizione"],
+        righe)
 
 print(f"  il passaggio su {lunghezze[-1]} token costa "
       f"{dec(tempi[-1] / tempi[0], 2)} volte quello su {lunghezze[0]}")
 verifica(tempi[-1] > tempi[0],
-         "un prefisso piu' lungo costa piu' tempo, a parita' di token prodotto")
+         "un prefisso piu' lungo costa piu' tempo, a parita' di token "
+         "prodotto")
 
 titolo("Quanto cresce, esattamente")
 import numpy as np
@@ -115,10 +117,12 @@ utili = n
 ripetute = sum(range(n))
 print(f"  generando {n} token, il modello elabora "
       f"{utili + ripetute} posizioni in totale")
-print(f"  ne servirebbero {utili}: le altre {ripetute} sono ricalcoli identici")
+print(f"  ne servirebbero {utili}: le altre {ripetute} sono ricalcoli "
+      "identici")
 print(f"  lavoro sprecato: {dec(100 * ripetute / (utili + ripetute), 1)}%")
-print("  ogni chiave e ogni valore gia' calcolati vengono ricalcolati identici")
-print("  a ogni passo, perche' dipendono solo dal token e dalla sua posizione")
+print("  ogni chiave e ogni valore gia' calcolati vengono ricalcolati")
+print("  identici a ogni passo, perche' dipendono solo dal token e dalla sua")
+print("  posizione")
 
 titolo("Perche' si possono conservare")
 byte_per_token = 2 * cfg.n_layer * cfg.n_kv_head * cfg.d_head * 4

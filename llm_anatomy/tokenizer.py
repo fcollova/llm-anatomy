@@ -38,7 +38,8 @@ class CharTokenizer:
 
     def salva(self, percorso: str | Path) -> None:
         Path(percorso).write_text(
-            json.dumps({"itos": self.itos}, ensure_ascii=False), encoding="utf-8"
+            json.dumps({"itos": self.itos}, ensure_ascii=False),
+            encoding="utf-8",
         )
 
     @classmethod

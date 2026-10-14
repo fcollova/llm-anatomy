@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import torch
 
 from llm_anatomy.model import applica_rope, frequenze_rope
-from llm_anatomy.utils import (figura, prepara, stampa_shape, stile_figure,
+from llm_anatomy.utils import (dec, figura, prepara, stampa_shape, stile_figure,
                                tabella, titolo, verifica)
 
 prepara()
@@ -40,7 +40,7 @@ for m in (0, 10, 50, 100, 200):
     n = m + distanza
     qm = applica_rope(q, cos[m:m + 1], sin[m:m + 1])
     kn = applica_rope(k, cos[n:n + 1], sin[n:n + 1])
-    righe.append([m, n, n - m, f"{(qm * kn).sum().item():.6f}".replace(".", ",")])
+    righe.append([m, n, n - m, dec((qm * kn).sum().item(), 6)])
 tabella(["pos. query", "pos. chiave", "differenza", "prodotto scalare"], righe)
 
 valori = []
@@ -50,7 +50,8 @@ for m in range(0, T - distanza):
                       sin[m + distanza:m + distanza + 1])
     valori.append((qm * kn).sum().item())
 scarto = max(valori) - min(valori)
-print(f"  su tutte le {len(valori)} posizioni possibili a distanza {distanza},")
+print(f"  su tutte le {len(valori)} posizioni possibili "
+      f"a distanza {distanza},")
 print(f"  lo scarto fra massimo e minimo e' {scarto:.3e}")
 verifica(scarto < 1e-4,
          "il punteggio dipende solo da m-n, non dalle posizioni assolute")
@@ -60,7 +61,7 @@ righe = []
 for dist in (0, 1, 2, 8, 32, 128):
     q0 = applica_rope(q, cos[0:1], sin[0:1])
     kd = applica_rope(k, cos[dist:dist + 1], sin[dist:dist + 1])
-    righe.append([dist, f"{(q0 * kd).sum().item():.4f}".replace(".", ",")])
+    righe.append([dist, dec((q0 * kd).sum().item(), 4)])
 tabella(["distanza", "prodotto scalare"], righe)
 print("  a distanza zero il punteggio e' quello dei vettori non ruotati:")
 print("  RoPE non aggiunge informazione, la ridistribuisce fra gli angoli")
@@ -89,10 +90,9 @@ fig, ax = plt.subplots(2, 1, figsize=(stile_figure(), 4.6))
 ax[0].plot(profili["punteggio"], lw=1)
 ax[0].set_xlabel("distanza fra query e chiave")
 ax[0].set_ylabel("prodotto scalare")
-ax[0].set_title("dipende solo dalla distanza")
 ax[1].plot(valori, lw=1)
 ax[1].set_xlabel("posizione della query")
 ax[1].set_ylabel("prodotto scalare")
-ax[1].set_title(f"coppia a distanza fissa {distanza}")
 ax[1].set_ylim(min(valori) - 1, max(valori) + 1)
+fig.tight_layout()
 figura(fig, "02-06_rope")

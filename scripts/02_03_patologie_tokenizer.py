@@ -13,7 +13,7 @@ Da provare: aggiungi una parola italiana lunga e conta i suoi pezzi.
 
 from llm_anatomy.data import carica_testo
 from llm_anatomy.tokenizer import addestra_bpe
-from llm_anatomy.utils import numero, prepara, tabella, titolo, verifica
+from llm_anatomy.utils import dec, numero, prepara, tabella, titolo, verifica
 
 prepara()
 
@@ -39,7 +39,7 @@ for parola, lettera in (("prezzemolo", "z"), ("sottilissime", "s"),
     print(f"  {parola!r:<16} -> {p}")
     quante = parola.count(lettera)
     print(f"  {'':<16}    {quante} lettere {lettera!r} sparse in {len(p)} "
-          f"token che non le tengono separate")
+          f"token, mescolate ad altre")
 print("  chiedere quante lettere ci sono significa chiedere di contare dentro")
 print("  simboli che il modello riceve gia' fusi")
 
@@ -74,19 +74,19 @@ righe = []
 for lingua, frase in campioni.items():
     n_tok = len(pezzi(frase))
     n_parole = len(frase.split())
-    righe.append([lingua, len(frase), n_tok, n_parole,
-                  f"{n_tok / n_parole:.2f}".replace(".", ",")])
+    righe.append([lingua, len(frase), n_tok, n_parole, dec(n_tok / n_parole)])
 tabella(["lingua", "caratteri", "token", "parole", "token per parola"], righe)
 inglese = len(pezzi(campioni["inglese"])) / len(campioni["inglese"].split())
 italiano = len(pezzi(campioni["italiano"])) / len(campioni["italiano"].split())
-print(f"  l'inglese costa {inglese / italiano:.2f} volte l'italiano a parita' di"
-      .replace(".", ","))
-print("  contenuto: stessa finestra di contesto, meno testo dentro, e un conto")
-print("  a token che cresce nella stessa proporzione")
+print(f"  l'inglese costa {dec(inglese / italiano)} volte l'italiano a "
+      "parita' di")
+print("  contenuto: stessa finestra di contesto, meno testo dentro, e un")
+print("  conto a token che cresce nella stessa proporzione")
 verifica(inglese > italiano,
-         "il costo per parola e' maggiore nella lingua che il corpus non contiene")
+         "il costo per parola e' maggiore nella lingua che il corpus non "
+         "contiene")
 
 titolo("Una causa sola")
 print("  il modello riceve identificatori interi, non testo. Ogni patologia")
-print("  qui sopra e' la stessa osservazione vista da un lato diverso: cio' che")
-print("  non e' un token non e' un'unita' su cui il modello possa operare")
+print("  qui sopra e' la stessa osservazione vista da un lato diverso: cio'")
+print("  che non e' un token non e' un'unita' su cui il modello possa operare")

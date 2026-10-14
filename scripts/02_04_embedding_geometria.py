@@ -43,12 +43,13 @@ stampa_shape("tok_emb.weight", E)
 print(f"  passo di addestramento del checkpoint: {stato['passo']}")
 print(f"  {cfg.vocab_size} simboli in uno spazio a {cfg.d_model} dimensioni")
 print(f"  norma media: {E.norm(dim=1).mean():.4f}   "
-      f"minima: {E.norm(dim=1).min():.4f}   massima: {E.norm(dim=1).max():.4f}")
+      f"minima: {E.norm(dim=1).min():.4f}   "
+      f"massima: {E.norm(dim=1).max():.4f}")
 
 titolo("Chi finisce vicino a chi")
 En = F.normalize(E, dim=1)
 sim = En @ En.T
-sim.fill_diagonal_(-2.0)
+sim.fill_diagonal_(-2.0)      # nessun simbolo e' il vicino di se stesso
 
 
 def nome(i: int) -> str:
@@ -73,19 +74,28 @@ gruppi = {
     "maiuscole": "ABCDEFGHILMNOPRSTUV",
     "punteggiatura": ".,;:!?'",
 }
-indici = {g: [tok.stoi[c] for c in cs if c in tok.stoi] for g, cs in gruppi.items()}
-righe = []
+indici = {g: [tok.stoi[c] for c in cs if c in tok.stoi]
+          for g, cs in gruppi.items()}
+
+
+def coseno_medio(sim, da: list[int], verso: list[int]) -> float:
+    """La somiglianza media fra due gruppi di simboli."""
+    return float(torch.tensor([[sim[i, j] for j in verso if j != i]
+                               for i in da]).mean())
+
+
+righe, scarti = [], []
 for gruppo, idx in indici.items():
-    dentro = torch.tensor([[sim[i, j] for j in idx if j != i] for i in idx]).mean()
-    fuori_idx = [i for i in range(cfg.vocab_size) if i not in idx]
-    fuori = torch.tensor([[sim[i, j] for j in fuori_idx] for i in idx]).mean()
-    righe.append([gruppo, len(idx),
-                  f"{dentro:.3f}".replace(".", ","),
-                  f"{fuori:.3f}".replace(".", ","),
-                  f"{dentro - fuori:+.3f}".replace(".", ",")])
+    resto = [i for i in range(cfg.vocab_size) if i not in idx]
+    dentro = coseno_medio(sim, idx, idx)
+    fuori = coseno_medio(sim, idx, resto)
+    scarti.append(dentro - fuori)
+    righe.append([gruppo, len(idx), dec(dentro, 3), dec(fuori, 3),
+                  ("+" if dentro >= fuori else "") + dec(dentro - fuori, 3)])
 tabella(["gruppo", "n", "coseno interno", "coseno esterno", "scarto"], righe)
-verifica(all(float(r[4].replace(",", ".")) > 0 for r in righe),
-         "ogni gruppo e' piu' coeso al suo interno che verso il resto del vocabolario")
+verifica(all(s > 0 for s in scarti),
+         "ogni gruppo e' piu' coeso al suo interno che verso il resto del "
+         "vocabolario")
 
 titolo("La stessa cosa, disegnata")
 centrato = E - E.mean(dim=0, keepdim=True)
@@ -121,9 +131,9 @@ casuale = AgoGPT(cfg).tok_emb.weight.detach()
 Cn = F.normalize(casuale, dim=1)
 simc = Cn @ Cn.T
 simc.fill_diagonal_(-2.0)
-idx_voc = indici["vocali minuscole"]
-dentro_c = torch.tensor([[simc[i, j] for j in idx_voc if j != i] for i in idx_voc]).mean()
-dentro_a = torch.tensor([[sim[i, j] for j in idx_voc if j != i] for i in idx_voc]).mean()
+vocali = indici["vocali minuscole"]
+dentro_c = coseno_medio(simc, vocali, vocali)
+dentro_a = coseno_medio(sim, vocali, vocali)
 print(f"  coseno medio fra vocali, modello casuale:    {dentro_c:+.4f}")
 print(f"  coseno medio fra vocali, modello addestrato: {dentro_a:+.4f}")
 verifica(dentro_a > dentro_c + 0.05,

@@ -101,6 +101,7 @@ print()
 print(f"  perplexity finale: {math.exp(ultimo['loss_val']):.2f} "
       f"su {tok.vocab_size} simboli")
 
+titolo("Le stesse cose, disegnate")
 fig, ax = plt.subplots(figsize=(stile_figure(), 2.8))
 ax.plot([r["passo"] for r in righe], [r["loss_train"] for r in righe],
         label="addestramento", lw=1)
@@ -130,4 +131,5 @@ for riga in testo.split("\n"):
 parole = [p for p in testo.replace("\n", " ").split(" ") if p.isalpha()]
 print()
 print(f"  parole alfabetiche generate: {len(parole)}")
-print(f"  lunghezza media: {sum(len(p) for p in parole) / max(1, len(parole)):.1f}")
+media = sum(len(p) for p in parole) / max(1, len(parole))
+print(f"  lunghezza media: {media:.1f}")

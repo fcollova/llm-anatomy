@@ -56,13 +56,15 @@ def frequenze_rope(d_head: int, block_size: int, theta: float = 10000.0,
     viene trattata come m/scaling, che e' il modo piu' semplice di estendere il
     contesto oltre quello visto in addestramento.
     """
-    inv = 1.0 / (theta ** (torch.arange(0, d_head, 2, device=device).float() / d_head))
+    pari = torch.arange(0, d_head, 2, device=device).float()
+    inv = 1.0 / (theta ** (pari / d_head))
     pos = torch.arange(block_size, device=device).float() / scaling
     ang = torch.outer(pos, inv)
     return ang.cos(), ang.sin()
 
 
-def applica_rope(x: torch.Tensor, cos: torch.Tensor, sin: torch.Tensor) -> torch.Tensor:
+def applica_rope(x: torch.Tensor, cos: torch.Tensor,
+                 sin: torch.Tensor) -> torch.Tensor:
     """Ruota a coppie le componenti di x. x: (B, h, T, d_head)."""
     x1, x2 = x[..., 0::2], x[..., 1::2]
     cos = cos[None, None, :, :]
@@ -104,10 +106,12 @@ class CausalSelfAttention(nn.Module):
         self.usa_rope = cfg.pos == "rope"
         self.dropout = cfg.dropout
 
-        self.wq = nn.Linear(cfg.d_model, cfg.n_head * cfg.d_head, bias=cfg.bias)
-        self.wk = nn.Linear(cfg.d_model, cfg.n_kv_head * cfg.d_head, bias=cfg.bias)
-        self.wv = nn.Linear(cfg.d_model, cfg.n_kv_head * cfg.d_head, bias=cfg.bias)
-        self.wo = nn.Linear(cfg.n_head * cfg.d_head, cfg.d_model, bias=cfg.bias)
+        d_q = cfg.n_head * cfg.d_head       # tutte le teste delle domande
+        d_kv = cfg.n_kv_head * cfg.d_head   # quelle di chiavi e valori
+        self.wq = nn.Linear(cfg.d_model, d_q, bias=cfg.bias)
+        self.wk = nn.Linear(cfg.d_model, d_kv, bias=cfg.bias)
+        self.wv = nn.Linear(cfg.d_model, d_kv, bias=cfg.bias)
+        self.wo = nn.Linear(d_q, cfg.d_model, bias=cfg.bias)
         self.drop = nn.Dropout(cfg.dropout)
 
     def forward(self, x, cos=None, sin=None, cache=None,
@@ -133,7 +137,8 @@ class CausalSelfAttention(nn.Module):
         pesi = None
         if restituisci_pesi:
             punteggi = (q @ k.transpose(-2, -1)) / math.sqrt(self.d_head)
-            maschera = torch.ones(T, Tk, dtype=torch.bool, device=x.device).tril(Tk - T)
+            maschera = torch.ones(T, Tk, dtype=torch.bool,
+                                  device=x.device).tril(Tk - T)
             punteggi = punteggi.masked_fill(~maschera, float("-inf"))
             pesi = punteggi.softmax(dim=-1)
             y = pesi @ v
@@ -143,7 +148,8 @@ class CausalSelfAttention(nn.Module):
                 dropout_p=self.dropout if self.training else 0.0,
             )
 
-        y = y.transpose(1, 2).contiguous().view(B, T, self.n_head * self.d_head)
+        y = y.transpose(1, 2).contiguous()
+        y = y.view(B, T, self.n_head * self.d_head)
         y = self.drop(self.wo(y))
         return (y, pesi) if restituisci_pesi else (y, None)
 
@@ -226,9 +232,11 @@ class Blk(nn.Module):
         self.norm2 = crea_norm(cfg)
         self.ffn = crea_ffn(cfg)
 
-    def forward(self, x, cos=None, sin=None, cache=None, restituisci_pesi=False):
+    def forward(self, x, cos=None, sin=None, cache=None,
+                restituisci_pesi=False):
         if self.pre_norm:
-            a, pesi = self.attn(self.norm1(x), cos, sin, cache, restituisci_pesi)
+            a, pesi = self.attn(self.norm1(x), cos, sin, cache,
+                                restituisci_pesi)
             x = x + a
             x = x + self.ffn(self.norm2(x))
         else:
@@ -284,7 +292,8 @@ class AgoGPT(nn.Module):
             nn.init.normal_(modulo.weight, mean=0.0, std=0.02)
 
     def forward(self, idx, targets=None, caches=None, pos_offset: int = 0,
-                restituisci_pesi: bool = False, restituisci_stati: bool = False):
+                restituisci_pesi: bool = False,
+                restituisci_stati: bool = False):
         B, T = idx.shape
         x = self.tok_emb(idx)
 
@@ -293,7 +302,9 @@ class AgoGPT(nn.Module):
             cos = self.rope_cos[pos_offset:pos_offset + T]
             sin = self.rope_sin[pos_offset:pos_offset + T]
         elif self.cfg.pos == "learned":
-            x = x + self.pos_emb(torch.arange(pos_offset, pos_offset + T, device=idx.device))
+            posizioni = torch.arange(pos_offset, pos_offset + T,
+                                     device=idx.device)
+            x = x + self.pos_emb(posizioni)
         elif self.cfg.pos == "sinusoidal":
             x = x + self.pos_tab[pos_offset:pos_offset + T]
 

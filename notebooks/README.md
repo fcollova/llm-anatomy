@@ -12,8 +12,9 @@ Cinque notebook usano il modello addestrato: se manca, ne scaricano i pesi. Sono
 
 | Notebook | Che cosa mostra | Durata | Colab |
 |---|---|---|---|
-| [`01_01_tensori_e_shape`](01_01_tensori_e_shape.ipynb) | forme | 5 s | [apri](https://colab.research.google.com/github/fcollova/llm-anatomy/blob/main/notebooks/01_01_tensori_e_shape.ipynb) |
+| [`01_01_tensori_e_shape`](01_01_tensori_e_shape.ipynb) | tensori | 5 s | [apri](https://colab.research.google.com/github/fcollova/llm-anatomy/blob/main/notebooks/01_01_tensori_e_shape.ipynb) |
 | [`01_02_prodotto_scalare`](01_02_prodotto_scalare.ipynb) | prodotto scalare | 5 s | [apri](https://colab.research.google.com/github/fcollova/llm-anatomy/blob/main/notebooks/01_02_prodotto_scalare.ipynb) |
+| [`01_09_moltiplicare_matrici`](01_09_moltiplicare_matrici.ipynb) | moltiplicare matrici | 5 s | [apri](https://colab.research.google.com/github/fcollova/llm-anatomy/blob/main/notebooks/01_09_moltiplicare_matrici.ipynb) |
 | [`01_03_neurone_e_strato`](01_03_neurone_e_strato.ipynb) | uno strato | 5 s | [apri](https://colab.research.google.com/github/fcollova/llm-anatomy/blob/main/notebooks/01_03_neurone_e_strato.ipynb) |
 | [`01_04_non_linearita`](01_04_non_linearita.ipynb) | non linearita' | 5 s | [apri](https://colab.research.google.com/github/fcollova/llm-anatomy/blob/main/notebooks/01_04_non_linearita.ipynb) |
 | [`01_05_autograd`](01_05_autograd.ipynb) | gradienti | 5 s | [apri](https://colab.research.google.com/github/fcollova/llm-anatomy/blob/main/notebooks/01_05_autograd.ipynb) |

@@ -54,7 +54,8 @@ verifica(p[:, 6:].abs().max().item() == 0.0,
 titolo("Guardare solo vicino")
 finestra = 4
 posizioni = torch.arange(T)
-scorrevole = causale & ((posizioni[:, None] - posizioni[None, :]) < finestra)
+distanza = posizioni[:, None] - posizioni[None, :]   # riga meno colonna
+scorrevole = causale & (distanza < finestra)
 mostra(f"finestra di {finestra} posizioni", scorrevole)
 print(f"  visibili: {int(scorrevole.sum())} contro {int(causale.sum())} della")
 print("  causale piena: la memoria della KV cache smette di crescere con T")
@@ -63,8 +64,8 @@ titolo("Non guardare l'altro documento")
 documento = torch.tensor([0, 0, 0, 0, 1, 1, 1, 2, 2, 2])
 per_documento = causale & (documento[:, None] == documento[None, :])
 mostra("tre documenti concatenati", per_documento)
-print("  senza questa maschera un documento leggerebbe la coda del precedente,")
-print("  imparando correlazioni che non esistono")
+print("  senza questa maschera un documento leggerebbe la coda del")
+print("  precedente, imparando correlazioni che non esistono")
 p = pesi_da(per_documento)
 verifica(p[7, :7].abs().max().item() == 0.0,
          "il primo token del terzo documento non vede i due precedenti")
@@ -77,10 +78,11 @@ print("  lunghezza reale della sequenza restano completamente spente: sono")
 print("  posizioni di riempimento, e la loro uscita va scartata, non usata.")
 righe_reali = composta[:int(lunghezze[1])]
 verifica(bool(righe_reali.any(dim=1).all()),
-         "ogni riga che corrisponde a un token vero conserva almeno una posizione")
+         "ogni riga che corrisponde a un token vero conserva almeno una "
+         "posizione")
 cieche = int((~composta.any(dim=1)).sum())
 print(f"  righe interamente spente: {cieche}, tutte oltre la posizione "
       f"{int(lunghezze[1])}")
-print("  su una riga cieca il softmax di soli -infinito produce NaN: e' il modo")
-print("  piu' comune di rompere un addestramento con le maschere, e si evita")
-print("  escludendo quelle posizioni dalla perdita")
+print("  su una riga cieca il softmax di soli -infinito produce NaN: e' il")
+print("  modo piu' comune di rompere un addestramento con le maschere, e si")
+print("  evita escludendo quelle posizioni dalla perdita")

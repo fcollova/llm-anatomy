@@ -41,8 +41,8 @@ avvio = torch.tensor([tok.encode("Risotto coi funghi\n\n")])
 titolo("Cio' che non cambia si conserva")
 print("  chiavi e valori di un token dipendono solo da quel token e dalla sua")
 print("  posizione: una volta calcolati non cambiano piu'. La cache li tiene,")
-print("  e a ogni passo il modello elabora un solo token nuovo invece di tutto")
-print("  il prefisso")
+print("  e a ogni passo il modello elabora un solo token nuovo invece di")
+print("  tutto il prefisso")
 
 titolo("Stesso testo, cifra per cifra")
 for temperatura, etichetta in ((0.0, "greedy"), (0.8, "con campionamento")):
@@ -50,8 +50,8 @@ for temperatura, etichetta in ((0.0, "greedy"), (0.8, "con campionamento")):
     g2 = torch.Generator().manual_seed(1234)
     con = genera(modello, avvio.clone(), 60, temp=temperatura, usa_cache=True,
                  generatore=g1)
-    senza = genera(modello, avvio.clone(), 60, temp=temperatura, usa_cache=False,
-                   generatore=g2)
+    senza = genera(modello, avvio.clone(), 60, temp=temperatura,
+                   usa_cache=False, generatore=g2)
     uguali = torch.equal(con, senza)
     print(f"  {etichetta:<20} identici: {uguali}")
     verifica(uguali, f"la cache non cambia il risultato ({etichetta})")
@@ -70,19 +70,20 @@ def cronometra(n_token: int, cache: bool, ripetizioni: int = 3) -> float:
     return tempi[len(tempi) // 2]
 
 
-righe = []
+righe, guadagni = [], []
 for n in (16, 32, 64, 100):
     t_con = cronometra(n, True)
     t_senza = cronometra(n, False)
-    righe.append([n, dec(t_senza, 3), dec(t_con, 3), dec(t_senza / t_con, 2) + "x",
+    guadagni.append(t_senza / t_con)
+    righe.append([n, dec(t_senza, 3), dec(t_con, 3),
+                  dec(guadagni[-1], 2) + "x",
                   dec(1000 * t_con / n, 2)])
 tabella(["token generati", "senza cache (s)", "con cache (s)", "speedup",
-         "ms per token con cache"], righe)
-guadagni = [float(r[3][:-1].replace(",", ".")) for r in righe]
+         "ms/token con cache"], righe)
 verifica(guadagni[-1] > guadagni[0],
          "il vantaggio della cache cresce con la lunghezza della sequenza")
-print("  lo speedup non e' una costante: cresce, perche' e' il rapporto fra un")
-print("  costo quadratico e uno lineare")
+print("  lo speedup non e' una costante: cresce, perche' e' il rapporto fra")
+print("  un costo quadratico e uno lineare")
 
 titolo("Il prezzo si paga in memoria")
 caches = modello.nuove_cache()
@@ -102,7 +103,8 @@ with torch.no_grad():
 tabella(["token in cache", "memoria totale", "per token"], righe)
 
 per_token = sum(c.byte() for c in caches) / offset
-print(f"  la crescita e' lineare: {byte_leggibili(per_token)} per token, cioe'")
+print(f"  la crescita e' lineare: {byte_leggibili(per_token)} per token, "
+      "cioe'")
 print(f"  2 tensori x {cfg.n_layer} blocchi x {cfg.n_kv_head} teste x "
       f"{cfg.d_head} dimensioni x 4 byte")
 

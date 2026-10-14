@@ -33,7 +33,7 @@ print(f"  sequenza:    {numero(len(sequenza))} token")
 
 
 def conta_coppie(seq: list[int]) -> Counter:
-    """Conta ogni coppia di token adiacenti. E' l'unica statistica che serve."""
+    """Conta ogni coppia di token adiacenti: l'unica statistica che serve."""
     return Counter(zip(seq, seq[1:]))
 
 
@@ -53,7 +53,7 @@ def fondi(seq: list[int], coppia: tuple[int, int], nuovo: int) -> list[int]:
 
 titolo("Le prime dieci fusioni")
 inverso = {i: c for c, i in vocabolario.items()}
-merge: list[tuple[tuple[int, int], int]] = []
+merge = []          # le fusioni, in ordine: ((a, b), nuovo simbolo)
 righe = []
 for passo in range(N_MERGE):
     conteggi = conta_coppie(sequenza)
@@ -74,7 +74,8 @@ for passo in range(N_MERGE):
             numero(frequenza),
             numero(prima - len(sequenza)),
         ])
-tabella(["merge", "coppia", "nuovo simbolo", "occorrenze", "token risparmiati"],
+tabella(["merge", "coppia", "nuovo simbolo", "occorrenze",
+         "token risparmiati"],
         righe)
 print("  i primi merge sono sequenze frequentissime e senza significato:")
 print("  vocale piu' spazio, virgola piu' spazio, sillabe")
@@ -92,7 +93,7 @@ scavalcano = [t for i, t in inverso.items()
               if i >= len(vocabolario) and a_cavallo(t)]
 print(f"  merge che scavalcano un confine di parola: {len(scavalcano)}"
       f" su {N_MERGE}")
-print(f"  i primi: {[t for t in scavalcano[:6]]}")
+print(f"  i primi: {scavalcano[:6]}")
 print("  in un tokenizer reale non esisterebbero: lo splitter spezza il testo")
 print("  prima dei merge e nessuna fusione attraversa i suoi confini")
 
@@ -108,7 +109,7 @@ for soglia in (0, 50, 150, N_MERGE):
         soglia,
         len(vocabolario) + soglia,
         numero(len(s)),
-        f"{len(testo) / len(s):.2f}".replace(".", ","),
+        numero(len(testo) / len(s), 2),
     ])
 tabella(["merge", "vocabolario", "token", "caratteri per token"], righe)
 
@@ -129,5 +130,5 @@ verifica(decodifica(sequenza) == testo,
 print(f"  compressione finale: {len(testo)} caratteri -> {len(sequenza)} token")
 print(f"  rapporto: {len(testo) / len(sequenza):.2f} caratteri per token"
       .replace(".", ","))
-print("  un BPE reale su miliardi di caratteri arriva a 4 circa: qui il corpus")
-print("  e' piccolo e i merge disponibili si esauriscono prima")
+print("  un BPE reale su miliardi di caratteri arriva a 4 circa: qui il")
+print("  corpus e' piccolo e i merge disponibili si esauriscono prima")

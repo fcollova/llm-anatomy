@@ -22,24 +22,26 @@ class AgoGPTConfig:
     n_layer: int = 4
     d_model: int = 192
     n_head: int = 6
-    n_kv_head: int | None = None      # None => MHA; 1 => MQA; 1<k<n_head => GQA
+    n_kv_head: int | None = None      # None: MHA; 1: MQA; in mezzo: GQA
     d_ff: int | None = None           # None => 8/3 * d_model, multiplo di 32
     dropout: float = 0.0
     norm: str = "rms"                 # "rms" | "layer"
     act: str = "swiglu"               # "swiglu" | "gelu" | "relu"
-    pos: str = "rope"                 # "rope" | "learned" | "sinusoidal" | "none"
+    pos: str = "rope"                 # o "learned", "sinusoidal", "none"
     rope_theta: float = 10000.0
-    rope_scaling: float = 1.0         # >1 => interpolazione lineare delle posizioni
+    rope_scaling: float = 1.0         # >1: posizioni interpolate
     tie_weights: bool = True
     bias: bool = False
 
     def __post_init__(self) -> None:
         if self.d_model % self.n_head != 0:
-            raise ValueError(f"d_model {self.d_model} non divisibile per n_head {self.n_head}")
+            raise ValueError(f"d_model {self.d_model} non divisibile "
+                             f"per n_head {self.n_head}")
         if self.n_kv_head is None:
             self.n_kv_head = self.n_head
         if self.n_head % self.n_kv_head != 0:
-            raise ValueError(f"n_head {self.n_head} non multiplo di n_kv_head {self.n_kv_head}")
+            raise ValueError(f"n_head {self.n_head} non multiplo "
+                             f"di n_kv_head {self.n_kv_head}")
         if self.d_ff is None:
             # SwiGLU ha tre matrici invece di due: per mantenere lo stesso
             # numero di parametri della FFN classica d_ff scende da 4d a 8/3 d.
@@ -55,7 +57,8 @@ class AgoGPTConfig:
 
     def descrizione(self) -> str:
         return (
-            f"L={self.n_layer} d={self.d_model} h={self.n_head}/{self.n_kv_head}kv "
+            f"L={self.n_layer} d={self.d_model} "
+            f"h={self.n_head}/{self.n_kv_head}kv "
             f"d_head={self.d_head} d_ff={self.d_ff} T={self.block_size} "
             f"norm={self.norm} act={self.act} pos={self.pos}"
         )

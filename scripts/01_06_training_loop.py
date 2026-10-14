@@ -39,23 +39,24 @@ Xv, yv = spirali(256)
 print(f"  dati: {tuple(X.shape)} esempi, due classi, confine non lineare")
 
 
+titolo("Il ciclo, in quattro righe")
 def addestra(modello, nome: str) -> list[float]:
     ott = torch.optim.Adam(modello.parameters(), lr=0.02)
     perdita_fn = nn.CrossEntropyLoss()
     storia = []
     for passo in range(PASSI):
-        logits = modello(X)
-        perdita = perdita_fn(logits, y)
-        ott.zero_grad(set_to_none=True)
-        perdita.backward()
-        ott.step()
+        logits = modello(X)                # 1. la previsione
+        perdita = perdita_fn(logits, y)    # 2. quanto sbaglia
+        ott.zero_grad(set_to_none=True)    #    via i gradienti vecchi
+        perdita.backward()                 # 3. i gradienti nuovi
+        ott.step()                         # 4. i pesi si spostano
         if (passo + 1) % 100 == 0:
             storia.append(perdita.item())
         if (passo + 1) % 500 == 0:
             with torch.no_grad():
                 acc = (modello(Xv).argmax(1) == yv).float().mean().item()
-            print(f"  {nome:<8} passo {passo + 1:5d}  perdita {perdita.item():.4f}  "
-                  f"accuratezza val {acc:.3f}")
+            print(f"  {nome:<8} passo {passo + 1:5d}  "
+                  f"perdita {perdita.item():.4f}  accuratezza val {acc:.3f}")
     return storia
 
 
@@ -88,6 +89,6 @@ ax[0].set_ylabel("perdita di addestramento")
 ax[0].legend()
 ax[1].scatter(X[y == 0, 0], X[y == 0, 1], s=4)
 ax[1].scatter(X[y == 1, 0], X[y == 1, 1], s=4)
-ax[1].set_title("il problema")
 ax[1].set_aspect("equal")
+fig.tight_layout()
 figura(fig, "01-06_curva_perdita")

@@ -92,10 +92,10 @@ for lunghezza in (128, 512, 1024):
     ])
 tabella(["T", "a mano (ms)", "libreria (ms)", "rapporto",
          "matrice dei pesi"], righe)
-print("  l'ultima colonna e' la memoria che la versione a mano deve allocare e")
-print("  che la libreria non alloca mai: cresce con il quadrato di T, ed e' la")
-print("  ragione per cui a contesto lungo la differenza smette di essere una")
-print("  questione di velocita' e diventa una questione di fattibilita'")
+print("  l'ultima colonna e' la memoria che la versione a mano deve allocare")
+print("  e che la libreria non alloca mai: cresce con il quadrato di T, ed e'")
+print("  la ragione per cui a contesto lungo la differenza smette di essere")
+print("  una questione di velocita' e diventa una questione di fattibilita'")
 
 titolo("Che cosa non si vede piu'")
 print("  i pesi di attenzione non sono piu' osservabili: per guardarli")

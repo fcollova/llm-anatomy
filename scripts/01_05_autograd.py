@@ -78,5 +78,5 @@ p = torch.tensor(3.0, requires_grad=True)
 q = (p * 2).detach() * p
 q.backward()
 print(f"  q = detach(2p) * p   ->  dq/dp = 2p (non 4p) = {p.grad.item():.1f}")
-print("  e' cosi' che si ferma il gradiente dove non deve passare, per esempio")
-print("  sui bersagli di una distillazione")
+print("  e' cosi' che si ferma il gradiente dove non deve passare, per")
+print("  esempio sui bersagli di una distillazione")
