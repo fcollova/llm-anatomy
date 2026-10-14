@@ -1,0 +1,8 @@
+# Prodotti dall'esecuzione degli script: si rigenerano.
+checkpoints/
+outputs/
+__pycache__/
+*.egg-info/
+.ipynb_checkpoints/
+# La copia che la prima cella di un notebook scarica, se aperto da solo.
+anatomia-di-un-llm/

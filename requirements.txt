@@ -1,0 +1,8 @@
+# Le versioni con cui il libro e' stato costruito: con queste, e lo stesso
+# numero di thread, i numeri stampati si riottengono cifra per cifra.
+# torch si installa nella versione per processore:
+#   pip install torch==2.13.0 --index-url https://download.pytorch.org/whl/cpu
+torch==2.13.0
+numpy==2.4.4
+matplotlib==3.10.8
+tokenizers==0.22.2

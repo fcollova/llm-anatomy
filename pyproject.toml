@@ -1,0 +1,16 @@
+# Serve a una cosa sola: far trovare a Python la cartella llm_anatomy/ da
+# dovunque si lanci uno script. Si usa una volta, con `pip install -e .`
+# Le librerie da installare stanno in requirements.txt, non qui: torch va
+# scelto nella versione per processore, e non deve arrivare per dipendenza.
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-anatomy"
+version = "0.1"
+description = "Il modello di Anatomia di un LLM: AgoGPT, un Transformer da leggere"
+requires-python = ">=3.10"
+
+[tool.setuptools]
+packages = ["llm_anatomy"]
